@@ -6,7 +6,7 @@ target 'MLApplication' do
   use_frameworks!
 
   # Pods for MLApplication
-#  pod 'Firebase/Core' #=> '5.5.0'
-#  pod 'Firebase/MLVision' #=> '5.5.0'
-#  pod 'Firebase/MLVisionTextModel' #=> '5.5.0'
+  pod 'Firebase/Core' #=> '5.5.0'
+  pod 'Firebase/MLVision' #=> '5.5.0'
+  pod 'Firebase/MLVisionTextModel' #=> '5.5.0'
 end
