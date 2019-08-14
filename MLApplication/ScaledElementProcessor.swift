@@ -30,17 +30,23 @@ class ScaledElementProcessor {
             }
             
             var driverLicense: DriverLicenseData = DriverLicenseData()
+            var fatherName: String = ""
+            var motherName: String = ""
             
             var nameIsNext = false
             var cpfIsNext = false
             var filiacaoIsNext = false
             
+            var fatherLineCount = 0
+            var motherLineCount = 0
+            
             for block in result.blocks {
+                
+                print("*\(block.text)")
                 
                 // NAME
                 if nameIsNext {
                     driverLicense.name = block.text
-                    print(block.frame)
                     nameIsNext = false
                 }
                 
@@ -55,8 +61,6 @@ class ScaledElementProcessor {
                             if let rg = line.elements[0].text as? String, let orgaoEmss = line.elements[1].text as? String {
                                 driverLicense.idDocNumber = rg.components(separatedBy:CharacterSet.decimalDigits.inverted).joined(separator: "")
                                 driverLicense.emissor = orgaoEmss
-                                print(line.elements[0].frame)
-                                print(line.elements[1].frame)
                             }
                         }
                     }
@@ -73,21 +77,27 @@ class ScaledElementProcessor {
                     cpfIsNext = true
                 }
                 
-                
                 // FILIACAO
-//                if filiacaoIsNext {
-//                    pai =  block.text
-//
-//                    for line in block.lines {
-//                        pai.append(line.text)
-//                    }
-//
-//                    filiacaoIsNext = false
-//                }
-//
-//                if block.text.contains("FILIA") {
-//                    filiacaoIsNext = true
-//                }
+                if filiacaoIsNext {
+                    if fatherLineCount == 0 || fatherLineCount == 1 {
+                        fatherName.append("\(block.text)")
+                        fatherLineCount += 1
+                    } else {
+                        if motherLineCount == 0 || motherLineCount == 1 {
+                            motherName.append("\(block.text)")
+                            motherLineCount += 1
+                        } else {
+                            driverLicense.fatherName = fatherName
+                            driverLicense.motherName = motherName
+                            
+                            filiacaoIsNext = false
+                        }
+                    }
+                }
+
+                if block.text.contains("FILIA") {
+                    filiacaoIsNext = true
+                }
             }
             
             callback(driverLicense)

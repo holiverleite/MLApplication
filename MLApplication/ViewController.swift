@@ -14,6 +14,8 @@ struct DriverLicenseData {
     var emissor: String = ""
     var cpfNumber: String = ""
     var bornDate: String = ""
+    var fatherName: String = ""
+    var motherName: String = ""
     
     init() {}
 }
@@ -30,6 +32,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var emissorLabel: UILabel!
     @IBOutlet weak var cpfLabel: UILabel!
     @IBOutlet weak var bornDateLabel: UILabel!
+    @IBOutlet weak var fathersNameLabel: UILabel!
+    @IBOutlet weak var mothersNameLabel: UILabel!
     
     @IBOutlet weak var loaderView: UIView! {
         didSet {
@@ -55,6 +59,12 @@ class ViewController: UIViewController {
         }
     }
 
+    @IBOutlet weak var tryAgainButton: UIButton! {
+        didSet {
+            self.tryAgainButton.addTarget(self, action: #selector(tryAgain), for: .touchUpInside)
+        }
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -71,7 +81,6 @@ class ViewController: UIViewController {
             self.activityIndicator.stopAnimating()
         }
     }
-
 }
 
 extension ViewController : UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -93,14 +102,12 @@ extension ViewController : UIImagePickerControllerDelegate, UINavigationControll
         self.present(imagePickerController, animated: true)
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        
-        if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
-            self.imageView.image = image
-        }
-        
+    @objc func tryAgain() {
+        self.processImage()
+    }
+    
+    func processImage() {
         self.changeLoaderState()
-        
         let processor = ScaledElementProcessor()
         processor.process(in: self.imageView) { (driverData) in
             self.changeLoaderState()
@@ -109,19 +116,36 @@ extension ViewController : UIImagePickerControllerDelegate, UINavigationControll
                 return
             }
             
-            self.nameLabel.text = driverLicense.name
-            self.rgLabel.text = driverLicense.idDocNumber
-            self.emissorLabel.text = driverLicense.emissor
-            self.cpfLabel.text = driverLicense.cpfNumber
-            self.bornDateLabel.text = driverLicense.bornDate
-
-            self.dataView.isHidden = false
-            
-//            let alert = UIAlertController(title: "Content of Image", message: "\(text)", preferredStyle: UIAlertController.Style.alert)
-//            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.destructive, handler: nil))
-            
-//            self.present(alert, animated: true, completion: nil)
+            if driverLicense.name.isEmpty || driverLicense.idDocNumber.isEmpty || driverLicense.emissor.isEmpty || driverLicense.cpfNumber.isEmpty || driverLicense.bornDate.isEmpty ||
+                driverLicense.motherName.isEmpty {
+                
+                let message = "Não foi possível identificar os campos, tente novamente."
+                let alert = UIAlertController(title: "Tente novamente", message: message, preferredStyle: UIAlertController.Style.alert)
+                alert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.destructive, handler: nil))
+                
+                self.present(alert, animated: true, completion: nil)
+                
+            } else {
+                self.nameLabel.text = driverLicense.name
+                self.rgLabel.text = driverLicense.idDocNumber
+                self.emissorLabel.text = driverLicense.emissor
+                self.cpfLabel.text = driverLicense.cpfNumber
+                self.bornDateLabel.text = driverLicense.bornDate
+                self.fathersNameLabel.text = driverLicense.fatherName
+                self.mothersNameLabel.text = driverLicense.motherName
+                
+                self.dataView.isHidden = false
+            }
         }
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        
+        if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
+            self.imageView.image = image
+        }
+        
+        self.processImage()
         
         picker.dismiss(animated: true, completion: nil)
     }
